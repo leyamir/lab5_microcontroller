@@ -61,7 +61,9 @@ void Error_Handler(void);
 #define LED_RED_Pin GPIO_PIN_5
 #define LED_RED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
-
+ADC_HandleTypeDef hadc1;
+TIM_HandleTypeDef htim2;
+UART_HandleTypeDef huart2;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

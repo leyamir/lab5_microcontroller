@@ -19,10 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "software_timer.h"
-
+#include "fsm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,11 +40,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-
-TIM_HandleTypeDef htim2;
-
-UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
@@ -62,28 +57,8 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t temp = 0;
-uint8_t buffer[6];
-uint8_t buffer_flag = 0;
-
-const char send_command[6] = "!RST#";
-const char ok_command[5] = "!OK#";
-int rst_pos = 0;
-int ok_pos = 0;
-uint32_t ADC_value = 0;
-char str[10];
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if(huart->Instance == USART2) {
-		HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
-		if(send_command[rst_pos] == temp) {
-			buffer[rst_pos++] = temp;
-		}
-		else rst_pos = 0;
-		if(ok_command[ok_pos] == temp) {
-			buffer[ok_pos] = temp;
-			ok_pos++;
-		}
-		else ok_pos = 0;
 		buffer_flag = 1;
 		HAL_UART_Receive_IT(&huart2, &temp, 1);
 	}
@@ -132,29 +107,11 @@ int main(void)
   HAL_UART_Receive_IT(&huart2, &temp, 1);
   while (1)
   {
+
+	start_fsm();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(buffer_flag == 1) {
-		  if(strcmp((const char*) buffer, "!RST#") == 0) {
-			  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-			  ADC_value = HAL_ADC_GetValue(&hadc1);
-			  HAL_UART_Transmit(&huart2, (void*)str, sprintf(str , "\r\n!ADC=%d", (int) ADC_value), 1000);
-			  setTimer1(300);
-			  for(int i = 0; i < 6; i++) {
-				 buffer[i] = 0;
-			  }
-		  }
-		  if(strcmp((const char*) buffer, "!OK#") == 0) {
-			  setTimer1(0);
-		  }
-
-		  buffer_flag = 0;
-	  }
-	  if(timer1_flag == 1) {
-		  setTimer1(300);
-		  HAL_UART_Transmit(&huart2, (void*)str, sprintf(str , "\r\n!ADC=%d", (int)ADC_value), 1000);
-	  }
   }
   /* USER CODE END 3 */
 }
